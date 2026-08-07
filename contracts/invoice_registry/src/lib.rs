@@ -53,4 +53,58 @@ impl InvoiceRegistry {
     pub fn get_payment_manager(env: Env) -> Address {
         env.storage().instance().get(&DataKey::PaymentManager).unwrap()
     }
+
+    #[allow(clippy::too_many_arguments)]
+    pub fn create_invoice(
+        env: Env,
+        creator: Address,
+        id: String,
+        client: Address,
+        amount: i128,
+        title: String,
+        description: String,
+        due_date: u64,
+    ) {
+        creator.require_auth();
+        if amount <= 0 {
+            panic!("amount must be positive");
+        }
+        let key = DataKey::Invoice(id.clone());
+        if env.storage().persistent().has(&key) {
+            panic!("invoice already exists");
+        }
+        let invoice = Invoice {
+            id: id.clone(),
+            creator: creator.clone(),
+            client: client.clone(),
+            amount,
+            title,
+            description,
+            due_date,
+            status: InvoiceStatus::Created,
+        };
+        env.storage().persistent().set(&key, &invoice);
+        let mut list: Vec<String> = env
+            .storage()
+            .persistent()
+            .get(&DataKey::InvoiceList)
+            .unwrap_or(Vec::new(&env));
+        list.push_back(id.clone());
+        env.storage().persistent().set(&DataKey::InvoiceList, &list);
+    }
+
+    pub fn get_invoice(env: Env, id: String) -> Invoice {
+        let key = DataKey::Invoice(id);
+        if !env.storage().persistent().has(&key) {
+            panic!("invoice not found");
+        }
+        env.storage().persistent().get(&key).unwrap()
+    }
+
+    pub fn get_all_invoices(env: Env) -> Vec<String> {
+        env.storage()
+            .persistent()
+            .get(&DataKey::InvoiceList)
+            .unwrap_or(Vec::new(&env))
+    }
 }
