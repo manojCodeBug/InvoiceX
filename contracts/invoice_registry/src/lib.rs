@@ -91,6 +91,10 @@ impl InvoiceRegistry {
             .unwrap_or(Vec::new(&env));
         list.push_back(id.clone());
         env.storage().persistent().set(&DataKey::InvoiceList, &list);
+        env.events().publish(
+            (Symbol::new(&env, "invoice_created"), id.clone(), creator.clone()),
+            (client, amount),
+        );
     }
 
     pub fn get_invoice(env: Env, id: String) -> Invoice {
