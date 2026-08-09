@@ -63,4 +63,18 @@ impl PaymentManager {
     pub fn get_registry(env: Env) -> Address {
         env.storage().instance().get(&DataKey::Registry).unwrap()
     }
+
+    pub fn pay_invoice(env: Env, caller: Address, id: String) {
+        caller.require_auth();
+        let registry_addr = self::PaymentManager::get_registry(env.clone());
+        let registry_client = InvoiceRegistryClient::new(&env, &registry_addr);
+        let invoice = registry_client.get_invoice(&id);
+        if invoice.client != caller {
+            panic!("caller must be the client");
+        }
+        let token_addr = self::PaymentManager::get_token(env.clone());
+        let token_client = soroban_sdk::token::Client::new(&env, &token_addr);
+        token_client.transfer(&caller, &invoice.creator, &invoice.amount);
+        registry_client.set_paid(&caller, &id);
+    }
 }
