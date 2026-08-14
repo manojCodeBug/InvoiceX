@@ -957,13 +957,335 @@ function LandingPage() {
   );
 }
 
+// ==========================================
+// DASHBOARD
+// ==========================================
+function DashboardPage({ onOpenWalletModal }: { onOpenWalletModal: () => void }) {
+  const { wallet, navigateTo, networkConfig, fundWalletAccount } = useInvoiceX();
+  const [invoices, setInvoices] = useState<InvoiceContractState[]>([]);
+  const [activityFeed, setActivityFeed] = useState<any[]>([]);
 
-function DashboardPage() {
-  return <div>Dashboard Overview</div>;
+  const fetchDashboardData = () => {
+    setInvoices(getInvoices());
+    setActivityFeed(getCombinedActivityFeed().slice(0, 5));
+  };
+
+  useEffect(() => {
+    fetchDashboardData();
+
+    // Auto-refresh updates
+    const handleInvoiceUpdate = () => {
+      fetchDashboardData();
+    };
+
+    window.addEventListener('invoicex_invoices_change', handleInvoiceUpdate);
+    window.addEventListener('invoicex_events_update', handleInvoiceUpdate);
+
+    return () => {
+      window.removeEventListener('invoicex_invoices_change', handleInvoiceUpdate);
+      window.removeEventListener('invoicex_events_update', handleInvoiceUpdate);
+    };
+  }, []);
+
+  // Compute Stats
+  const activeAddress = wallet.address;
+  const userInvoices = invoices.filter(i => i.creator === activeAddress || !activeAddress); // show all if not connected for simulator demo
+  const pendingInvoices = userInvoices.filter(i => i.status === 'pending');
+  const paidInvoices = userInvoices.filter(i => i.status === 'paid');
+  
+  const totalVolume = paidInvoices.reduce((sum, current) => sum + parseFloat(current.amount), 0).toFixed(2);
+  const pendingVolume = pendingInvoices.reduce((sum, current) => sum + parseFloat(current.amount), 0).toFixed(2);
+
+  return (
+    <div className="space-y-6 font-jt-rejiro text-left">
+      {/* Top Header Row */}
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div>
+          <h2 className="text-2xl font-majesti font-bold text-gray-900 dark:text-white">Dashboard Overview</h2>
+          <p className="text-xs text-gray-400 dark:text-gray-500 font-tomket-boys mt-0.5">
+            {networkConfig.mode === 'testnet' ? 'STELLAR TESTNET INTEGRATION' : 'SIMULATOR SANDBOX MODE'}
+          </p>
+        </div>
+        <div className="flex gap-2">
+          {wallet.isConnected && networkConfig.mode === 'simulator' && (
+            <button
+              onClick={fundWalletAccount}
+              className="px-4 py-2 border border-brand-border/30 rounded text-xs font-semibold hover:bg-brand-light/50 dark:hover:bg-brand-dark dark:border-white/5 dark:text-white flex items-center gap-1.5"
+            >
+              <RefreshCw className="w-3.5 h-3.5 animate-spin-slow" />
+              Request XLM Faucet
+            </button>
+          )}
+          <button
+            onClick={() => navigateTo('create-invoice')}
+            className="px-4 py-2 bg-brand-purple-dark text-white dark:text-black hover:bg-opacity-95 font-semibold text-xs rounded transition-all shadow-md flex items-center gap-1.5"
+          >
+            <Plus className="w-4 h-4" />
+            Create Invoice
+          </button>
+        </div>
+      </div>
+
+      {/* Network Alert Notification */}
+      {!wallet.isConnected && (
+        <div className="p-4 rounded bg-amber-50 border border-amber-200 dark:bg-amber-950/20 dark:border-amber-900/30 text-amber-800 dark:text-amber-300 flex items-start gap-3">
+          <AlertCircle className="w-5 h-5 text-amber-500 shrink-0 mt-0.5" />
+          <div className="text-sm">
+            <p className="font-semibold">Wallet Not Connected</p>
+            Connect Freighter Wallet or launch Simulator to view balance details and initiate smart contract calls.
+            <button 
+              onClick={onOpenWalletModal}
+              className="underline font-semibold block mt-1 hover:text-amber-900"
+            >
+              Connect Wallet Now
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Cards - Row 1 (Balance Management & Wallet Details) */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        
+        {/* Wallet Connection Status */}
+        <div className="p-5 rounded-lg bg-white dark:bg-brand-dark border border-brand-border/20 shadow-sm flex flex-col justify-between h-40">
+          <div>
+            <span className="text-[10px] text-gray-400 font-bold block font-tomket-boys">WALLET DETAILS</span>
+            {wallet.isConnected ? (
+              <div className="mt-2 space-y-1">
+                <span className="text-sm font-semibold dark:text-white block font-tomket-boys truncate pr-4">
+                  {wallet.address}
+                </span>
+                <span className="text-xs text-gray-500 dark:text-gray-400 block">
+                  Network: {wallet.network}
+                </span>
+              </div>
+            ) : (
+              <p className="text-sm text-gray-400 mt-4 leading-relaxed">
+                Connect Freighter to query active address on the Stellar ledger.
+              </p>
+            )}
+          </div>
+          <div>
+            {!wallet.isConnected ? (
+              <button 
+                onClick={onOpenWalletModal}
+                className="py-1.5 px-4 bg-brand-purple-dark text-white dark:text-black rounded font-semibold text-xs hover:bg-opacity-95"
+              >
+                Connect Freighter
+              </button>
+            ) : (
+              <div className="flex gap-2">
+                <span className="px-2 py-0.5 text-[10px] font-bold rounded bg-green-100 text-green-700 dark:bg-green-950/40 dark:text-green-400 font-tomket-boys">
+                  CONNECTED
+                </span>
+                {wallet.isAccountActive ? (
+                  <span className="px-2 py-0.5 text-[10px] font-bold rounded bg-blue-100 text-blue-700 dark:bg-blue-950/40 dark:text-blue-400 font-tomket-boys">
+                    ON-CHAIN ACTIVE
+                  </span>
+                ) : (
+                  <span className="px-2 py-0.5 text-[10px] font-bold rounded bg-red-100 text-red-700 dark:bg-red-950/40 dark:text-red-400 font-tomket-boys">
+                    INACTIVE
+                  </span>
+                )}
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Balance Card */}
+        <div className="p-5 rounded-lg bg-white dark:bg-brand-dark border border-brand-border/20 shadow-sm flex flex-col justify-between h-40">
+          <div>
+            <span className="text-[10px] text-gray-400 font-bold block font-tomket-boys">AVAILABLE BALANCE</span>
+            <div className="mt-3 flex items-baseline gap-2">
+              <span className="text-3xl font-extrabold text-brand-purple-dark dark:text-white font-tomket-boys">
+                {wallet.isConnected ? wallet.balance : '0.0000'}
+              </span>
+              <span className="text-xs text-gray-500 font-bold font-tomket-boys">XLM</span>
+            </div>
+            <span className="text-[10px] text-gray-400 block mt-1">Stellar Native Gas Token</span>
+          </div>
+          <div className="text-[10px] text-gray-400 flex items-center gap-1 font-tomket-boys border-t border-brand-border/10 pt-2">
+            <RefreshCw className="w-3 h-3 text-brand-purple" />
+            AUTO-REFRESH EVERY 5S
+          </div>
+        </div>
+
+        {/* Contract Identity card */}
+        <div className="p-5 rounded-lg bg-white dark:bg-brand-dark border border-brand-border/20 shadow-sm flex flex-col justify-between h-40">
+          <div>
+            <span className="text-[10px] text-gray-400 font-bold block font-tomket-boys">SOROBAN ESCROW CONTRACT</span>
+            <span className="text-[10px] font-mono text-gray-500 block truncate mt-2 font-tomket-boys select-all bg-brand-light/30 dark:bg-brand-dark/50 p-1.5 rounded">
+              {networkConfig.contractId}
+            </span>
+          </div>
+          <div className="flex justify-between items-center border-t border-brand-border/10 pt-2">
+            <span className="text-[10px] text-gray-400 font-tomket-boys">STATUS: IMPLEMENTED</span>
+            <button 
+              onClick={onOpenWalletModal}
+              className="text-[10px] text-brand-purple-dark dark:text-brand-purple hover:underline font-bold font-tomket-boys"
+            >
+              CHANGE ID
+            </button>
+          </div>
+        </div>
+
+      </div>
+
+      {/* Row 2 (Quick Metrics Row) */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div className="p-4 bg-white dark:bg-brand-dark border border-brand-border/15 rounded-lg shadow-sm">
+          <span className="text-[10px] text-gray-400 block font-tomket-boys">PENDING INVOICES</span>
+          <span className="text-2xl font-bold font-tomket-boys dark:text-white mt-1 block">{pendingInvoices.length}</span>
+        </div>
+        <div className="p-4 bg-white dark:bg-brand-dark border border-brand-border/15 rounded-lg shadow-sm">
+          <span className="text-[10px] text-gray-400 block font-tomket-boys">PAID INVOICES</span>
+          <span className="text-2xl font-bold font-tomket-boys dark:text-white mt-1 block">{paidInvoices.length}</span>
+        </div>
+        <div className="p-4 bg-white dark:bg-brand-dark border border-brand-border/15 rounded-lg shadow-sm">
+          <span className="text-[10px] text-gray-400 block font-tomket-boys">REVENUE RECEIVED</span>
+          <span className="text-2xl font-bold font-tomket-boys text-green-600 dark:text-green-400 mt-1 block">{totalVolume} XLM</span>
+        </div>
+        <div className="p-4 bg-white dark:bg-brand-dark border border-brand-border/15 rounded-lg shadow-sm">
+          <span className="text-[10px] text-gray-400 block font-tomket-boys">OUTSTANDING AMOUNT</span>
+          <span className="text-2xl font-bold font-tomket-boys text-amber-600 dark:text-amber-400 mt-1 block">{pendingVolume} XLM</span>
+        </div>
+      </div>
+
+      {/* Row 3 (Recent Activity / Invoices Table & Event monitor feed) */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        
+        {/* Recent Invoices Card */}
+        <div className="lg:col-span-2 p-5 rounded-lg bg-white dark:bg-brand-dark border border-brand-border/20 shadow-sm flex flex-col justify-between min-h-[350px]">
+          <div>
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-lg font-majesti font-bold text-gray-900 dark:text-white">Recent Invoices</h3>
+              <button 
+                onClick={() => navigateTo('invoices')}
+                className="text-xs text-brand-purple-dark dark:text-brand-purple hover:underline font-semibold"
+              >
+                View All Invoices
+              </button>
+            </div>
+
+            {userInvoices.length === 0 ? (
+              <div className="py-12 text-center text-gray-400">
+                <FileSpreadsheet className="w-10 h-10 mx-auto text-gray-300 dark:text-gray-700 mb-2" />
+                <p className="text-sm font-jt-rejiro">No Invoices Found</p>
+                <p className="text-xs text-gray-400 mt-1">Create your first invoice to initialize the smart contract storage.</p>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {userInvoices.slice(0, 3).map((invoice) => (
+                  <div 
+                    key={invoice.id}
+                    onClick={() => navigateTo('invoice-details', invoice.id)}
+                    className="p-3.5 rounded border border-brand-border/15 hover:border-brand-purple/30 dark:border-white/5 dark:hover:bg-brand-dark/40 cursor-pointer flex justify-between items-center transition-all bg-brand-light/10"
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className={`p-2 rounded ${
+                        invoice.status === 'paid' 
+                          ? 'bg-green-50 text-green-600 dark:bg-green-950/20 dark:text-green-400' 
+                          : invoice.status === 'cancelled'
+                          ? 'bg-red-50 text-red-600 dark:bg-red-950/20 dark:text-red-400'
+                          : 'bg-amber-50 text-amber-600 dark:bg-amber-950/20 dark:text-amber-400'
+                      }`}>
+                        <FileText className="w-4 h-4" />
+                      </div>
+                      <div>
+                        <h4 className="text-sm font-bold text-gray-900 dark:text-white">{invoice.title}</h4>
+                        <span className="text-[11px] text-gray-400 block font-tomket-boys mt-0.5">
+                          CLIENT: {invoice.clientName} | DUE: {formatDate(invoice.dueDate)}
+                        </span>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <span className="text-sm font-bold block dark:text-white font-tomket-boys">
+                        {parseFloat(invoice.amount).toFixed(2)} XLM
+                      </span>
+                      <span className={`text-[10px] font-bold font-tomket-boys px-2 py-0.5 rounded-full inline-block mt-1 ${
+                        invoice.status === 'paid'
+                          ? 'bg-green-50 text-green-700 dark:bg-green-950/30 dark:text-green-400'
+                          : invoice.status === 'cancelled'
+                          ? 'bg-red-50 text-red-700 dark:bg-red-950/30 dark:text-red-400'
+                          : 'bg-amber-50 text-amber-700 dark:bg-amber-950/30 dark:text-amber-400'
+                      }`}>
+                        {invoice.status.toUpperCase()}
+                      </span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+          {userInvoices.length > 3 && (
+            <button
+              onClick={() => navigateTo('invoices')}
+              className="w-full text-center text-xs text-gray-500 hover:text-gray-800 dark:text-gray-400 mt-4 border-t border-brand-border/10 pt-3"
+            >
+              Show {userInvoices.length - 3} more invoices
+            </button>
+          )}
+        </div>
+
+        {/* Live Activity Feed Monitor */}
+        <div className="p-5 rounded-lg bg-white dark:bg-brand-dark border border-brand-border/20 shadow-sm flex flex-col min-h-[350px]">
+          <div className="flex justify-between items-center mb-3">
+            <h3 className="text-lg font-majesti font-bold text-gray-900 dark:text-white flex items-center gap-1.5">
+              <Activity className="w-4 h-4 text-brand-purple" />
+              Live Activity Feed
+            </h3>
+            <span className="w-2.5 h-2.5 bg-green-500 rounded-full animate-pulse-slow"></span>
+          </div>
+          <span className="text-[10px] text-gray-400 block font-tomket-boys border-b border-brand-border/10 pb-2 mb-4">
+            REAL-TIME CONTRACT EVENT MONITOR
+          </span>
+
+          {activityFeed.length === 0 ? (
+            <div className="flex-1 flex flex-col items-center justify-center text-center text-gray-400">
+              <Activity className="w-8 h-8 text-gray-300 dark:text-gray-700 mb-2" />
+              <p className="text-xs">No ledger events recorded yet.</p>
+            </div>
+          ) : (
+            <div className="flex-1 space-y-4 overflow-y-auto max-h-[260px] pr-1">
+              {activityFeed.map((feed) => {
+                let statusColor = 'bg-brand-purple';
+                if (feed.type === 'invoice_paid') statusColor = 'bg-green-500';
+                else if (feed.type === 'invoice_cancelled') statusColor = 'bg-red-500';
+                else if (feed.type === 'tx_processing') statusColor = 'bg-blue-400 animate-pulse';
+
+                return (
+                  <div key={feed.id} className="flex gap-3 text-xs leading-normal">
+                    <span className={`w-2 h-2 rounded-full shrink-0 mt-1.5 ${statusColor}`}></span>
+                    <div className="flex-1">
+                      <p className="font-semibold text-gray-800 dark:text-gray-200">
+                        {feed.title}
+                      </p>
+                      <p className="text-gray-500 mt-0.5">{feed.description}</p>
+                      <span className="text-[10px] text-gray-400 font-tomket-boys mt-1 block">
+                        TX HASH: {feed.hash.substring(0, 16)}...
+                      </span>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+
+      </div>
+
+    </div>
+  );
+}
+
+
+function InvoicesPage() {
+  return <div>All Invoices Ledger</div>;
 }
 function AppContent() {
   const { currentPage } = useInvoiceX();
   if (currentPage === 'landing') return <LandingPage />;
+  if (currentPage === 'invoices') return <InvoicesPage />;
   return <DashboardPage />;
 }
 function App() {
