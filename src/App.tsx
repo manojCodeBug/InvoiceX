@@ -718,12 +718,253 @@ function Layout({ children, onOpenWalletModal }: { children: React.ReactNode; on
 
 // ==========================================
 // LANDING PAGE
-
+// ==========================================
 function LandingPage() {
-  return <div>Landing Page</div>;
+  const { navigateTo, wallet, theme, toggleTheme } = useInvoiceX();
+  const [walletModalOpen, setWalletModalOpen] = useState(false);
+
+  return (
+    <div className="min-h-screen bg-brand-light/20 dark:bg-brand-dark/40 flex flex-col font-jt-rejiro">
+      {/* Landing Nav */}
+      <header className="h-20 max-w-7xl mx-auto w-full px-6 flex items-center justify-between select-none">
+        <div 
+          onClick={() => navigateTo('landing')}
+          className="flex items-center gap-3 cursor-pointer"
+        >
+          <img src="/logo.png" alt="InvoiceX Logo" className="h-10 w-auto object-contain rounded-md" />
+          <span className="font-majesti text-3xl font-extrabold bg-gradient-to-r from-brand-purple-dark via-brand-purple to-brand-blue-dark dark:from-brand-purple dark:to-brand-blue bg-clip-text text-transparent">
+            InvoiceX
+          </span>
+        </div>
+
+        <div className="flex items-center gap-4">
+          <button 
+            onClick={toggleTheme}
+            className="p-2 rounded-full hover:bg-brand-light/80 dark:hover:bg-brand-dark text-gray-600 dark:text-gray-400"
+            title="Toggle Theme"
+          >
+            {theme === 'light' ? <Moon className="w-5 h-5" /> : <Sun className="w-5 h-5" />}
+          </button>
+          
+          {wallet.isConnected ? (
+            <button 
+              onClick={() => navigateTo('dashboard')}
+              className="px-5 py-2 rounded-lg bg-brand-purple-dark hover:bg-opacity-95 text-white dark:text-black font-medium text-sm transition-all shadow-md flex items-center gap-1.5"
+            >
+              Enter Dashboard
+              <ArrowRight className="w-4 h-4" />
+            </button>
+          ) : (
+            <button 
+              onClick={() => setWalletModalOpen(true)}
+              className="px-5 py-2 rounded-lg border border-brand-purple-dark text-brand-purple-dark dark:border-brand-purple dark:text-brand-purple font-semibold text-sm hover:bg-brand-purple-dark hover:text-white transition-all shadow-sm flex items-center gap-1.5"
+            >
+              <Wallet className="w-4 h-4" />
+              Connect Wallet
+            </button>
+          )}
+        </div>
+      </header>
+
+      {/* Hero Section */}
+      <section className="max-w-7xl mx-auto w-full px-6 pt-12 pb-20 flex flex-col lg:flex-row items-center gap-16 flex-grow">
+        <div className="flex-1 space-y-6 text-left">
+          <h1 className="text-5xl lg:text-6xl font-majesti font-extrabold text-gray-900 dark:text-white leading-[1.1] tracking-tight">
+            Create. Send. Get Paid. <br />
+            <span className="bg-gradient-to-r from-brand-purple-dark to-brand-blue-dark dark:from-brand-purple dark:to-brand-blue bg-clip-text text-transparent">
+              On the Stellar Network.
+            </span>
+          </h1>
+          <p className="text-lg text-gray-500 dark:text-gray-400 leading-relaxed font-jt-rejiro max-w-xl">
+            A premium, decentralized invoicing engine built on Soroban smart contracts. Invoice clients, receive secure payments in XLM, and manage your billing cycle transparently, directly on-chain.
+          </p>
+
+          <div className="flex flex-wrap gap-4 pt-2">
+            <button 
+              onClick={() => {
+                if (wallet.isConnected) {
+                  navigateTo('dashboard');
+                } else {
+                  setWalletModalOpen(true);
+                }
+              }}
+              className="px-8 py-3.5 rounded-lg bg-brand-purple-dark text-white dark:text-black hover:bg-opacity-95 font-semibold text-base transition-all shadow-lg ambient-glow flex items-center gap-2"
+            >
+              Launch InvoiceX
+              <ArrowRight className="w-5 h-5" />
+            </button>
+            <a 
+              href="#how-it-works"
+              className="px-8 py-3.5 rounded-lg border border-brand-border/40 text-gray-600 dark:text-gray-400 font-semibold text-base hover:bg-brand-light/50 dark:hover:bg-brand-dark transition-all flex items-center justify-center"
+            >
+              Explore Sandbox
+            </a>
+          </div>
+
+          <div className="flex items-center gap-6 pt-4 text-xs font-semibold text-gray-400 font-tomket-boys">
+            <span className="flex items-center gap-1"><CheckCircle2 className="w-4 h-4 text-brand-purple" /> SECURE SMART CONTRACTS</span>
+            <span className="flex items-center gap-1"><CheckCircle2 className="w-4 h-4 text-brand-purple" /> FREIGHTER WALLET SUPPORT</span>
+            <span className="flex items-center gap-1"><CheckCircle2 className="w-4 h-4 text-brand-purple" /> ZERO INTERMEDIARIES</span>
+          </div>
+        </div>
+
+        {/* Hero Visual Mockup */}
+        <div className="flex-1 w-full max-w-lg lg:max-w-none">
+          <motion.div 
+            initial={{ opacity: 0, scale: 0.96 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: 0.15 }}
+            className="p-1 rounded-xl bg-gradient-to-tr from-brand-purple/20 via-brand-border/20 to-brand-blue/20 shadow-2xl"
+          >
+            <div className="rounded-lg bg-white dark:bg-brand-dark/95 border border-brand-border/10 p-6 space-y-6">
+              {/* Mock Invoice header */}
+              <div className="flex justify-between items-start border-b border-brand-border/10 pb-4">
+                <div>
+                  <span className="text-[10px] font-bold text-brand-purple block font-tomket-boys">INVOICEX PREVIEW</span>
+                  <h4 className="text-lg font-majesti font-bold text-gray-900 dark:text-white mt-1">Audit Escrow Payment</h4>
+                  <span className="text-xs text-gray-400 mt-0.5 block font-tomket-boys">ID: inv_test_88f9</span>
+                </div>
+                <div className="px-2.5 py-1 text-[10px] font-bold rounded bg-amber-50 text-amber-700 dark:bg-amber-950/20 dark:text-amber-300 font-tomket-boys">
+                  PENDING
+                </div>
+              </div>
+
+              {/* Mock Details */}
+              <div className="grid grid-cols-2 gap-4 text-sm">
+                <div>
+                  <span className="text-xs text-gray-400 block font-tomket-boys">CLIENT</span>
+                  <span className="font-semibold dark:text-white">Stellar Foundation</span>
+                </div>
+                <div>
+                  <span className="text-xs text-gray-400 block font-tomket-boys">DUE DATE</span>
+                  <span className="font-semibold dark:text-white font-tomket-boys">2026-07-31</span>
+                </div>
+              </div>
+
+              {/* Amount and pay button */}
+              <div className="p-4 rounded-lg bg-brand-light/30 dark:bg-brand-dark border border-brand-border/20 flex justify-between items-center">
+                <div>
+                  <span className="text-xs text-gray-400 block font-tomket-boys">TOTAL DUE</span>
+                  <span className="text-xl font-extrabold text-brand-purple-dark dark:text-white font-tomket-boys">2,500.00 XLM</span>
+                </div>
+                <button className="px-4 py-2 rounded bg-brand-purple-dark text-white dark:text-black font-bold text-xs hover:bg-opacity-90 transition-all flex items-center gap-1 shadow-sm">
+                  <Wallet className="w-3.5 h-3.5" />
+                  Sign Payment
+                </button>
+              </div>
+
+              {/* Event Monitor Feed preview */}
+              <div className="pt-2">
+                <span className="text-xs text-gray-400 block font-tomket-boys mb-2">LIVE ACTIVITY LOG</span>
+                <div className="flex gap-2.5 text-xs text-gray-500">
+                  <span className="w-1.5 h-1.5 rounded-full bg-green-500 mt-1.5"></span>
+                  <p className="flex-1 text-left leading-relaxed">
+                    <span className="font-semibold text-gray-700 dark:text-gray-300 font-tomket-boys">inv_test_88f9</span> created on-chain. <br />
+                    <span className="text-[10px] text-gray-400 font-tomket-boys">Tx Hash: sim_hash_create_77ac21...</span>
+                  </p>
+                </div>
+              </div>
+            </div>
+          </motion.div>
+        </div>
+      </section>
+
+      {/* Features Section */}
+      <section className="py-20 border-t border-brand-border/10 dark:border-white/5 bg-white dark:bg-brand-dark/20">
+        <div className="max-w-7xl mx-auto w-full px-6 text-center space-y-12">
+          <div className="space-y-4">
+            <h2 className="text-3xl font-majesti font-bold text-gray-900 dark:text-white">
+              Why Invoicing on Stellar?
+            </h2>
+            <p className="text-gray-500 dark:text-gray-400 max-w-xl mx-auto">
+              Decentralized invoice structures solve key trust, speed, and cost inefficiencies.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div className="p-6 rounded-lg bg-brand-light/30 dark:bg-brand-dark/30 border border-brand-border/20 text-left space-y-4 hover:border-brand-purple/40 transition-all">
+              <div className="w-10 h-10 rounded bg-brand-purple/10 flex items-center justify-center text-brand-purple">
+                <Wallet className="w-5 h-5" />
+              </div>
+              <h3 className="text-lg font-bold dark:text-white">Freighter Wallet Sign</h3>
+              <p className="text-sm text-gray-500 dark:text-gray-400 leading-relaxed">
+                Connect Freighter, click Pay, and securely approve the transaction payload. Fully integrated with Stellar signature requests.
+              </p>
+            </div>
+
+            <div className="p-6 rounded-lg bg-brand-light/30 dark:bg-brand-dark/30 border border-brand-border/20 text-left space-y-4 hover:border-brand-purple/40 transition-all">
+              <div className="w-10 h-10 rounded bg-brand-blue/20 flex items-center justify-center text-brand-blue-dark">
+                <Activity className="w-5 h-5" />
+              </div>
+              <h3 className="text-lg font-bold dark:text-white">Soroban Smart Contracts</h3>
+              <p className="text-sm text-gray-500 dark:text-gray-400 leading-relaxed">
+                Create, cancel, and execute payments through deployed Soroban contract modules on Testnet. Real-time updates prevent double billing.
+              </p>
+            </div>
+
+            <div className="p-6 rounded-lg bg-brand-light/30 dark:bg-brand-dark/30 border border-brand-border/20 text-left space-y-4 hover:border-brand-purple/40 transition-all">
+              <div className="w-10 h-10 rounded bg-green-100 flex items-center justify-center text-green-700 dark:bg-green-950/40 dark:text-green-400">
+                <FileCheck className="w-5 h-5" />
+              </div>
+              <h3 className="text-lg font-bold dark:text-white">Event Monitoring</h3>
+              <p className="text-sm text-gray-500 dark:text-gray-400 leading-relaxed">
+                On-chain events are parsed instantly. Creation, payment, and cancellation updates are indexed to feed real-time analytics.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* How it Works Section */}
+      <section id="how-it-works" className="py-20 border-t border-brand-border/10 dark:border-white/5">
+        <div className="max-w-7xl mx-auto w-full px-6 text-center space-y-12">
+          <div className="space-y-4">
+            <h2 className="text-3xl font-majesti font-bold text-gray-900 dark:text-white">How InvoiceX Works</h2>
+            <p className="text-gray-500 dark:text-gray-400 max-w-xl mx-auto">Get billing up and running in three simple steps.</p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 relative">
+            <div className="space-y-3 text-center">
+              <span className="w-12 h-12 rounded-full border-2 border-brand-purple-dark text-brand-purple-dark dark:border-brand-purple dark:text-brand-purple flex items-center justify-center mx-auto text-xl font-bold font-tomket-boys">1</span>
+              <h4 className="text-base font-bold dark:text-white">Connect Wallet</h4>
+              <p className="text-xs text-gray-500 dark:text-gray-400 max-w-xs mx-auto leading-relaxed">Link your Freighter wallet on Testnet or test instantly with our zero-install dApp simulator mode.</p>
+            </div>
+
+            <div className="space-y-3 text-center">
+              <span className="w-12 h-12 rounded-full border-2 border-brand-purple-dark text-brand-purple-dark dark:border-brand-purple dark:text-brand-purple flex items-center justify-center mx-auto text-xl font-bold font-tomket-boys">2</span>
+              <h4 className="text-base font-bold dark:text-white">Create On-Chain Invoice</h4>
+              <p className="text-xs text-gray-500 dark:text-gray-400 max-w-xs mx-auto leading-relaxed">Fill out client info, set billing amounts in XLM, and broadcast your invoice contract state to the ledger.</p>
+            </div>
+
+            <div className="space-y-3 text-center">
+              <span className="w-12 h-12 rounded-full border-2 border-brand-purple-dark text-brand-purple-dark dark:border-brand-purple dark:text-brand-purple flex items-center justify-center mx-auto text-xl font-bold font-tomket-boys">3</span>
+              <h4 className="text-base font-bold dark:text-white">Get Paid Directly</h4>
+              <p className="text-xs text-gray-500 dark:text-gray-400 max-w-xs mx-auto leading-relaxed">Clients pay using the invoice reference link, triggering automated contract transfers instantly.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Landing Footer */}
+      <footer className="py-8 border-t border-brand-border/10 dark:border-white/5 bg-white dark:bg-brand-dark/20 text-center select-none">
+        <p className="text-xs text-gray-400 font-tomket-boys">
+          InvoiceX © 2026. Decentralized Escrow Billing System.
+        </p>
+      </footer>
+
+      <WalletModal isOpen={walletModalOpen} onClose={() => setWalletModalOpen(false)} />
+    </div>
+  );
+}
+
+
+function DashboardPage() {
+  return <div>Dashboard Overview</div>;
 }
 function AppContent() {
-  return <LandingPage />;
+  const { currentPage } = useInvoiceX();
+  if (currentPage === 'landing') return <LandingPage />;
+  return <DashboardPage />;
 }
 function App() {
   return (
