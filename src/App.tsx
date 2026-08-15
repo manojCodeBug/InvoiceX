@@ -1278,14 +1278,294 @@ function DashboardPage({ onOpenWalletModal }: { onOpenWalletModal: () => void })
   );
 }
 
-
+// ==========================================
+// ALL INVOICES PAGE
+// ==========================================
 function InvoicesPage() {
-  return <div>All Invoices Ledger</div>;
+  const { navigateTo, wallet } = useInvoiceX();
+  const [invoices, setInvoices] = useState<InvoiceContractState[]>([]);
+  const [search, setSearch] = useState('');
+  const [statusFilter, setStatusFilter] = useState<'all' | 'pending' | 'paid' | 'cancelled'>('all');
+  const [sortField, setSortField] = useState<'dueDate' | 'amount' | 'clientName'>('dueDate');
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
+  const [currentPageNum, setCurrentPageNum] = useState(1);
+  const itemsPerPage = 5;
+
+  const loadInvoices = () => {
+    setInvoices(getInvoices());
+  };
+
+  useEffect(() => {
+    loadInvoices();
+
+    const handleInvoiceUpdate = () => {
+      loadInvoices();
+    };
+
+    window.addEventListener('invoicex_invoices_change', handleInvoiceUpdate);
+    return () => window.removeEventListener('invoicex_invoices_change', handleInvoiceUpdate);
+  }, []);
+
+  // Filter & Search
+  const activeAddress = wallet.address;
+  const userInvoices = invoices.filter(i => i.creator === activeAddress || !activeAddress);
+
+  const filteredInvoices = userInvoices
+    .filter((invoice) => {
+      const matchSearch = 
+        invoice.clientName.toLowerCase().includes(search.toLowerCase()) || 
+        invoice.title.toLowerCase().includes(search.toLowerCase()) ||
+        invoice.id.toLowerCase().includes(search.toLowerCase());
+      
+      const matchStatus = statusFilter === 'all' || invoice.status === statusFilter;
+      
+      return matchSearch && matchStatus;
+    })
+    .sort((a, b) => {
+      let multiplier = sortOrder === 'asc' ? 1 : -1;
+      if (sortField === 'amount') {
+        return (parseFloat(a.amount) - parseFloat(b.amount)) * multiplier;
+      }
+      if (sortField === 'clientName') {
+        return a.clientName.localeCompare(b.clientName) * multiplier;
+      }
+      // default: dueDate
+      return (new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime()) * multiplier;
+    });
+
+  // Pagination
+  const totalPages = Math.max(1, Math.ceil(filteredInvoices.length / itemsPerPage));
+  const paginatedInvoices = filteredInvoices.slice(
+    (currentPageNum - 1) * itemsPerPage,
+    currentPageNum * itemsPerPage
+  );
+
+  const handleSort = (field: typeof sortField) => {
+    if (sortField === field) {
+      setSortOrder(prev => prev === 'asc' ? 'desc' : 'asc');
+    } else {
+      setSortField(field);
+      setSortOrder('desc');
+    }
+    setCurrentPageNum(1);
+  };
+
+  return (
+    <div className="space-y-6 font-jt-rejiro text-left">
+      <div className="flex justify-between items-center">
+        <div>
+          <h2 className="text-2xl font-majesti font-bold text-gray-900 dark:text-white">All Invoices</h2>
+          <p className="text-xs text-gray-400 dark:text-gray-500 font-tomket-boys mt-0.5">
+            ON-CHAIN INVOICE LEDGER QUERY
+          </p>
+        </div>
+        <button
+          onClick={() => navigateTo('create-invoice')}
+          className="px-4 py-2 bg-brand-purple-dark text-white dark:text-black hover:bg-opacity-95 font-semibold text-xs rounded transition-all shadow-md flex items-center gap-1.5"
+        >
+          <Plus className="w-4 h-4" />
+          Create Invoice
+        </button>
+      </div>
+
+      {/* Filters & Search Row */}
+      <div className="p-4 rounded-lg bg-white dark:bg-brand-dark border border-brand-border/20 shadow-sm flex flex-col md:flex-row gap-4 items-center">
+        <div className="relative flex-1 w-full">
+          <Search className="w-4 h-4 text-gray-400 absolute left-3 top-3" />
+          <input
+            type="text"
+            placeholder="Search by client name, title, or invoice ID..."
+            value={search}
+            onChange={(e) => { setSearch(e.target.value); setCurrentPageNum(1); }}
+            className="w-full pl-9 pr-4 py-2 text-sm border border-brand-border/30 rounded focus:outline-none focus:border-brand-purple dark:bg-brand-dark/40 dark:border-white/10 dark:text-white"
+          />
+        </div>
+
+        {/* Tab Filters */}
+        <div className="flex flex-wrap gap-1 bg-brand-light/40 dark:bg-brand-dark/60 p-1 rounded-md border border-brand-border/15 w-full md:w-auto">
+          {(['all', 'pending', 'paid', 'cancelled'] as const).map((status) => (
+            <button
+              key={status}
+              onClick={() => { setStatusFilter(status); setCurrentPageNum(1); }}
+              className={`px-3 py-1.5 text-xs rounded font-semibold transition-all capitalize flex-1 md:flex-none ${
+                statusFilter === status
+                  ? 'bg-brand-purple-dark text-white dark:text-black'
+                  : 'text-gray-500 hover:text-gray-700 dark:hover:text-white'
+              }`}
+            >
+              {status}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Invoices List / Table */}
+      <div className="bg-white dark:bg-brand-dark border border-brand-border/20 rounded-lg shadow-sm overflow-hidden">
+        
+        {/* Table Head - Desktop */}
+        <div className="hidden md:grid grid-cols-6 p-4 border-b border-brand-border/15 bg-brand-light/30 dark:bg-brand-dark/50 text-xs font-bold text-gray-400 font-tomket-boys select-none">
+          <div className="col-span-2">INVOICE TITLE / ID</div>
+          <div className="cursor-pointer flex items-center gap-1 hover:text-gray-600 dark:hover:text-white" onClick={() => handleSort('clientName')}>
+            CLIENT {sortField === 'clientName' && <ArrowUpDown className="w-3.5 h-3.5" />}
+          </div>
+          <div className="cursor-pointer flex items-center gap-1 hover:text-gray-600 dark:hover:text-white" onClick={() => handleSort('amount')}>
+            AMOUNT {sortField === 'amount' && <ArrowUpDown className="w-3.5 h-3.5" />}
+          </div>
+          <div className="cursor-pointer flex items-center gap-1 hover:text-gray-600 dark:hover:text-white" onClick={() => handleSort('dueDate')}>
+            DUE DATE {sortField === 'dueDate' && <ArrowUpDown className="w-3.5 h-3.5" />}
+          </div>
+          <div className="text-right">STATUS</div>
+        </div>
+
+        {/* Table Body */}
+        {paginatedInvoices.length === 0 ? (
+          <div className="py-20 text-center text-gray-400">
+            <FileSpreadsheet className="w-12 h-12 mx-auto text-gray-300 dark:text-gray-700 mb-3" />
+            <p className="font-medium text-sm">No Invoices Found</p>
+            <p className="text-xs text-gray-400 mt-1">Try adjusting your filters or create a new invoice to publish.</p>
+          </div>
+        ) : (
+          <div className="divide-y divide-brand-border/10 dark:divide-white/5">
+            {paginatedInvoices.map((invoice) => (
+              <div
+                key={invoice.id}
+                onClick={() => navigateTo('invoice-details', invoice.id)}
+                className="grid grid-cols-1 md:grid-cols-6 p-4 items-center gap-2 hover:bg-brand-light/20 dark:hover:bg-brand-dark/40 cursor-pointer transition-all text-sm"
+              >
+                {/* Title / ID */}
+                <div className="col-span-2 text-left">
+                  <h4 className="font-bold text-gray-900 dark:text-white truncate pr-4">{invoice.title}</h4>
+                  <span className="text-[10px] text-gray-400 font-mono font-tomket-boys mt-0.5 block">{invoice.id}</span>
+                </div>
+
+                {/* Client */}
+                <div className="text-left font-medium dark:text-gray-300">
+                  <span className="md:hidden text-[10px] text-gray-400 block font-tomket-boys mb-0.5">CLIENT</span>
+                  {invoice.clientName}
+                </div>
+
+                {/* Amount */}
+                <div className="text-left font-bold font-tomket-boys text-brand-purple-dark dark:text-white">
+                  <span className="md:hidden text-[10px] text-gray-400 block font-tomket-boys mb-0.5">AMOUNT</span>
+                  {parseFloat(invoice.amount).toFixed(2)} XLM
+                </div>
+
+                {/* Due Date */}
+                <div className="text-left font-semibold text-gray-500 dark:text-gray-400 font-tomket-boys">
+                  <span className="md:hidden text-[10px] text-gray-400 block font-tomket-boys mb-0.5">DUE DATE</span>
+                  {formatDate(invoice.dueDate)}
+                </div>
+
+                {/* Status Badge */}
+                <div className="text-left md:text-right">
+                  <span className="md:hidden text-[10px] text-gray-400 block font-tomket-boys mb-1">STATUS</span>
+                  <span className={`text-[10px] font-bold font-tomket-boys px-2.5 py-1 rounded-full inline-block ${
+                    invoice.status === 'paid'
+                      ? 'bg-green-50 text-green-700 dark:bg-green-950/30 dark:text-green-400 border border-green-200/20'
+                      : invoice.status === 'cancelled'
+                      ? 'bg-red-50 text-red-700 dark:bg-red-950/30 dark:text-red-400 border border-red-200/20'
+                      : 'bg-amber-50 text-amber-700 dark:bg-amber-950/30 dark:text-amber-400 border border-amber-200/20'
+                  }`}>
+                    {invoice.status.toUpperCase()}
+                  </span>
+                </div>
+
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Pagination row */}
+      {totalPages > 1 && (
+        <div className="flex justify-between items-center border-t border-brand-border/10 pt-4 px-2">
+          <span className="text-xs text-gray-500 dark:text-gray-400 font-tomket-boys">
+            PAGE {currentPageNum} OF {totalPages} ({filteredInvoices.length} INVOICES)
+          </span>
+
+          <div className="flex gap-2">
+            <button
+              onClick={() => setCurrentPageNum(prev => Math.max(1, prev - 1))}
+              disabled={currentPageNum === 1}
+              className="p-1.5 border border-brand-border/30 dark:border-white/5 rounded text-gray-500 dark:text-gray-400 hover:bg-brand-light/80 dark:hover:bg-brand-dark/40 disabled:opacity-40 disabled:hover:bg-transparent transition-all"
+            >
+              <ChevronLeft className="w-4 h-4" />
+            </button>
+            
+            <button
+              onClick={() => setCurrentPageNum(prev => Math.min(totalPages, prev + 1))}
+              disabled={currentPageNum === totalPages}
+              className="p-1.5 border border-brand-border/30 dark:border-white/5 rounded text-gray-500 dark:text-gray-400 hover:bg-brand-light/80 dark:hover:bg-brand-dark/40 disabled:opacity-40 disabled:hover:bg-transparent transition-all"
+            >
+              <ChevronRight className="w-4 h-4" />
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+interface InvoiceTemplate {
+  name: string;
+  clientName: string;
+  clientEmail: string;
+  clientAddress: string;
+  title: string;
+  description: string;
+  amount: string;
+  daysToDue: number;
+  notes: string;
+}
+
+const INVOICE_TEMPLATES: InvoiceTemplate[] = [
+  {
+    name: 'Web Development',
+    clientName: 'Acme Software Corp',
+    clientEmail: 'billing@acmesoftware.io',
+    clientAddress: 'GDACMEWEBCORP2026XXXYYYZZZAAABBBCCC',
+    title: 'Next.js Frontend Development & Soroban Integration',
+    description: 'Implementation of the high-fidelity billing dashboard, transaction status modals, and custom hook-based contract event handlers.',
+    amount: '3500.00',
+    daysToDue: 14,
+    notes: 'Payment terms: Net-14. Release of escrow funds is requested upon deployment to the staging server.',
+  },
+  {
+    name: 'UI/UX Design',
+    clientName: 'Stellar Design Studio',
+    clientEmail: 'finance@stellardesign.co',
+    clientAddress: 'GDSTELLARDESIGN2026XXXYYYZZZAAABBBCCC',
+    title: 'Fintech SaaS Platform Rebranding & UI Kit',
+    description: 'Creation of typography guidelines, harmonious modern color schemes, Figma design structures, and responsive CSS tokens.',
+    amount: '1850.00',
+    daysToDue: 7,
+    notes: 'Source design files (Figma, SVGs) will be delivered immediately upon network transaction confirmation.',
+  },
+  {
+    name: 'Smart Contract Audit',
+    clientName: 'Decentralized Escrow DAO',
+    clientEmail: 'audit@escrowdao.org',
+    clientAddress: 'GDESCROWDAO2026XXXYYYZZZAAABBBCCC',
+    title: 'Soroban Escrow Rust Smart Contract Audit',
+    description: 'Line-by-line review of the InvoiceRegistry and PaymentManager Rust contracts, identifying reentrancy, authorization logic, and memory safety vulnerabilities.',
+    amount: '7500.00',
+    daysToDue: 30,
+    notes: 'Includes detailed security audit report and recommendation guides. Code audit completed successfully.',
+  }
+];
+
+// ==========================================
+// CREATE INVOICE FORM
+// ==========================================
+
+function CreateInvoicePage() {
+  return <div>Create On-Chain Invoice</div>;
 }
 function AppContent() {
   const { currentPage } = useInvoiceX();
   if (currentPage === 'landing') return <LandingPage />;
   if (currentPage === 'invoices') return <InvoicesPage />;
+  if (currentPage === 'create-invoice') return <CreateInvoicePage />;
   return <DashboardPage />;
 }
 function App() {
