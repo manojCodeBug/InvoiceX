@@ -1557,17 +1557,763 @@ const INVOICE_TEMPLATES: InvoiceTemplate[] = [
 // ==========================================
 // CREATE INVOICE FORM
 // ==========================================
-
 function CreateInvoicePage() {
-  return <div>Create On-Chain Invoice</div>;
+  const { createInvoiceAction, wallet, navigateTo, showToast } = useInvoiceX();
+  const [submitting, setSubmitting] = useState(false);
+
+  const [form, setForm] = useState<InvoiceFormInput>({
+    clientName: '',
+    clientEmail: '',
+    clientAddress: '',
+    title: '',
+    description: '',
+    amount: '',
+    dueDate: '',
+    notes: '',
+  });
+
+  const handleInputChange = (field: keyof InvoiceFormInput, value: string) => {
+    setForm((prev: InvoiceFormInput) => ({ ...prev, [field]: value }));
+  };
+
+  const handleApplyTemplate = (tmpl: InvoiceTemplate) => {
+    const today = new Date();
+    today.setDate(today.getDate() + tmpl.daysToDue);
+    const dueDateStr = today.toISOString().split('T')[0];
+
+    setForm({
+      clientName: tmpl.clientName,
+      clientEmail: tmpl.clientEmail,
+      clientAddress: tmpl.clientAddress,
+      title: tmpl.title,
+      description: tmpl.description,
+      amount: tmpl.amount,
+      dueDate: dueDateStr,
+      notes: tmpl.notes,
+    });
+    showToast(`Template "${tmpl.name}" applied!`, 'success');
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (!wallet.isConnected) {
+      showToast('Please connect your Freighter or Simulator wallet first', 'error');
+      return;
+    }
+
+    setSubmitting(true);
+    const success = await createInvoiceAction(form);
+    setSubmitting(false);
+
+    if (success) {
+      navigateTo('dashboard');
+    }
+  };
+
+  return (
+    <div className="max-w-3xl mx-auto space-y-6 font-jt-rejiro text-left">
+      <div>
+        <h2 className="text-2xl font-majesti font-bold text-gray-900 dark:text-white">Create On-Chain Invoice</h2>
+        <p className="text-xs text-gray-400 dark:text-gray-500 font-tomket-boys mt-0.5">
+          BROADCAST NEW INVOICE TO SOROBAN LEDGER
+        </p>
+      </div>
+
+      {/* Quick Templates Selector */}
+      <div className="p-4 bg-brand-light/30 dark:bg-brand-dark/40 border border-brand-border/15 rounded-lg space-y-3">
+        <div className="flex items-center gap-2">
+          <Sparkles className="w-4 h-4 text-brand-purple" />
+          <span className="text-xs font-bold text-gray-500 dark:text-gray-400 font-tomket-boys uppercase tracking-wider">
+            Quick Invoice Templates
+          </span>
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+          {INVOICE_TEMPLATES.map((tmpl) => (
+            <button
+              key={tmpl.name}
+              type="button"
+              onClick={() => handleApplyTemplate(tmpl)}
+              className="p-3 bg-white dark:bg-brand-dark border border-brand-border/20 dark:border-white/5 rounded-md text-left hover:border-brand-purple hover:shadow-sm transition-all group"
+            >
+              <div className="font-bold text-xs dark:text-white group-hover:text-brand-purple-dark dark:group-hover:text-brand-purple transition-colors">
+                {tmpl.name}
+              </div>
+              <div className="text-[10px] text-gray-400 mt-1 line-clamp-1">
+                {tmpl.title}
+              </div>
+              <div className="text-[10px] font-bold text-brand-purple-dark dark:text-brand-purple mt-2 font-tomket-boys">
+                {tmpl.amount} XLM
+              </div>
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <form onSubmit={handleSubmit} className="p-6 md:p-8 bg-white dark:bg-brand-dark border border-brand-border/20 rounded-lg shadow-sm space-y-6">
+        
+        {/* Row 1: Client details */}
+        <div className="space-y-4">
+          <h3 className="text-sm font-bold text-gray-400 font-tomket-boys border-b border-brand-border/10 pb-1.5 uppercase">
+            Client Information
+          </h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="text-xs font-semibold text-gray-500 dark:text-gray-400 block mb-1">
+                Client Name *
+              </label>
+              <input
+                type="text"
+                required
+                placeholder="e.g. Stellar Development Foundation"
+                value={form.clientName}
+                onChange={(e) => handleInputChange('clientName', e.target.value)}
+                className="w-full px-3 py-2 text-sm border border-brand-border/30 rounded focus:outline-none focus:border-brand-purple dark:bg-brand-dark/40 dark:border-white/10 dark:text-white"
+              />
+            </div>
+            <div>
+              <label className="text-xs font-semibold text-gray-500 dark:text-gray-400 block mb-1">
+                Client Email *
+              </label>
+              <input
+                type="email"
+                required
+                placeholder="billing@stellar.org"
+                value={form.clientEmail}
+                onChange={(e) => handleInputChange('clientEmail', e.target.value)}
+                className="w-full px-3 py-2 text-sm border border-brand-border/30 rounded focus:outline-none focus:border-brand-purple dark:bg-brand-dark/40 dark:border-white/10 dark:text-white"
+              />
+            </div>
+          </div>
+          <div>
+            <label className="text-xs font-semibold text-gray-500 dark:text-gray-400 block mb-1">
+              Client Stellar Wallet Address *
+            </label>
+            <input
+              type="text"
+              required
+              placeholder="e.g. G... (56-character Stellar public key)"
+              value={form.clientAddress}
+              onChange={(e) => handleInputChange('clientAddress', e.target.value)}
+              className="w-full px-3 py-2 text-sm border border-brand-border/30 rounded focus:outline-none focus:border-brand-purple dark:bg-brand-dark/40 dark:border-white/10 dark:text-white font-mono"
+            />
+          </div>
+        </div>
+
+        {/* Row 2: Billing details */}
+        <div className="space-y-4">
+          <h3 className="text-sm font-bold text-gray-400 font-tomket-boys border-b border-brand-border/10 pb-1.5 uppercase">
+            Invoice details
+          </h3>
+          <div className="space-y-4">
+            <div>
+              <label className="text-xs font-semibold text-gray-500 dark:text-gray-400 block mb-1">
+                Invoice Title *
+              </label>
+              <input
+                type="text"
+                required
+                placeholder="e.g. Smart Contract Audit Escrow"
+                value={form.title}
+                onChange={(e) => handleInputChange('title', e.target.value)}
+                className="w-full px-3 py-2 text-sm border border-brand-border/30 rounded focus:outline-none focus:border-brand-purple dark:bg-brand-dark/40 dark:border-white/10 dark:text-white"
+              />
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="text-xs font-semibold text-gray-500 dark:text-gray-400 block mb-1">
+                  Billing Amount (XLM) *
+                </label>
+                <div className="relative">
+                  <input
+                    type="number"
+                    step="0.0001"
+                    min="0.0001"
+                    required
+                    placeholder="2500.00"
+                    value={form.amount}
+                    onChange={(e) => handleInputChange('amount', e.target.value)}
+                    className="w-full pl-3 pr-12 py-2 text-sm border border-brand-border/30 rounded focus:outline-none focus:border-brand-purple dark:bg-brand-dark/40 dark:border-white/10 dark:text-white font-tomket-boys font-semibold"
+                  />
+                  <span className="text-xs font-bold text-gray-400 absolute right-3 top-2.5 font-tomket-boys select-none">
+                    XLM
+                  </span>
+                </div>
+              </div>
+              <div>
+                <label className="text-xs font-semibold text-gray-500 dark:text-gray-400 block mb-1">
+                  Due Date *
+                </label>
+                <input
+                  type="date"
+                  required
+                  value={form.dueDate}
+                  onChange={(e) => handleInputChange('dueDate', e.target.value)}
+                  className="w-full px-3 py-2 text-sm border border-brand-border/30 rounded focus:outline-none focus:border-brand-purple dark:bg-brand-dark/40 dark:border-white/10 dark:text-white font-tomket-boys"
+                />
+              </div>
+            </div>
+
+            <div>
+              <label className="text-xs font-semibold text-gray-500 dark:text-gray-400 block mb-1">
+                Description / Line Items *
+              </label>
+              <textarea
+                required
+                rows={3}
+                placeholder="Detail the work performed, milestones reached or specific deliverables..."
+                value={form.description}
+                onChange={(e) => handleInputChange('description', e.target.value)}
+                className="w-full px-3 py-2 text-sm border border-brand-border/30 rounded focus:outline-none focus:border-brand-purple dark:bg-brand-dark/40 dark:border-white/10 dark:text-white resize-none"
+              />
+            </div>
+
+            <div>
+              <label className="text-xs font-semibold text-gray-500 dark:text-gray-400 block mb-1 font-tomket-boys">
+                ADDITIONAL NOTES / MEMO (OPTIONAL)
+              </label>
+              <textarea
+                rows={2}
+                placeholder="Include wallet public keys, special transfer conditions or standard greetings..."
+                value={form.notes}
+                onChange={(e) => handleInputChange('notes', e.target.value)}
+                className="w-full px-3 py-2 text-sm border border-brand-border/30 rounded focus:outline-none focus:border-brand-purple dark:bg-brand-dark/40 dark:border-white/10 dark:text-white resize-none"
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* Form actions */}
+        <div className="pt-4 border-t border-brand-border/10 flex justify-end gap-3">
+          <button
+            type="button"
+            onClick={() => navigateTo('dashboard')}
+            className="px-5 py-2.5 rounded border border-brand-border/30 hover:bg-brand-light/50 dark:border-white/5 dark:text-white text-sm font-semibold transition-all"
+          >
+            Cancel
+          </button>
+          <button
+            type="submit"
+            disabled={submitting}
+            className="px-6 py-2.5 rounded bg-brand-purple-dark text-white dark:text-black hover:bg-opacity-95 font-semibold text-sm transition-all shadow-md flex items-center gap-1.5 disabled:opacity-50"
+          >
+            {submitting ? (
+              <>
+                <Loader2 className="w-4 h-4 animate-spin" />
+                Broadcasting...
+              </>
+            ) : (
+              <>
+                <FileCheck className="w-4 h-4" />
+                Publish Escrow Invoice
+              </>
+            )}
+          </button>
+        </div>
+
+      </form>
+    </div>
+  );
 }
+
+// ==========================================
+// INVOICE DETAILS
+// ==========================================
+function InvoiceDetailsPage() {
+  const { currentInvoiceId, payInvoiceAction, cancelInvoiceAction, wallet, navigateTo } = useInvoiceX();
+  const [invoice, setInvoice] = useState<InvoiceContractState | undefined>(undefined);
+  const [paying, setPaying] = useState(false);
+  const [cancelling, setCancelling] = useState(false);
+
+  useEffect(() => {
+    const loadInvoiceDetails = () => {
+      if (currentInvoiceId) {
+        setInvoice(getInvoiceById(currentInvoiceId));
+      }
+    };
+
+    loadInvoiceDetails();
+
+    const handleInvoiceUpdate = () => {
+      loadInvoiceDetails();
+    };
+
+    window.addEventListener('invoicex_invoices_change', handleInvoiceUpdate);
+    return () => window.removeEventListener('invoicex_invoices_change', handleInvoiceUpdate);
+  }, [currentInvoiceId]);
+
+  if (!invoice) {
+    return (
+      <div className="text-center py-16 text-gray-500 font-jt-rejiro text-left">
+        <AlertCircle className="w-12 h-12 mx-auto text-gray-300 dark:text-gray-700 mb-3" />
+        <h3 className="font-bold text-base">Invoice Not Found</h3>
+        <p className="text-xs text-gray-400 mt-1">The requested invoice hash does not exist in local storage or smart contract index.</p>
+        <button 
+          onClick={() => navigateTo('invoices')}
+          className="mt-6 px-4 py-2 bg-brand-purple-dark text-white dark:text-black rounded font-semibold text-xs hover:bg-opacity-95"
+        >
+          Return to Invoice Ledger
+        </button>
+      </div>
+    );
+  }
+
+  const isOwner = wallet.isConnected && wallet.address === invoice.creator;
+
+  const handlePay = async () => {
+    setPaying(true);
+    await payInvoiceAction(invoice.id);
+    setPaying(false);
+  };
+
+  const handleCancel = async () => {
+    setCancelling(true);
+    await cancelInvoiceAction(invoice.id);
+    setCancelling(false);
+  };
+
+  // Determine relative due date text
+  const getDueStatus = () => {
+    const due = new Date(invoice.dueDate).getTime();
+    const today = new Date().setHours(0, 0, 0, 0);
+    const diffDays = Math.ceil((due - today) / (1000 * 60 * 60 * 24));
+
+    if (invoice.status === 'paid') return 'Paid';
+    if (invoice.status === 'cancelled') return 'Cancelled';
+    if (diffDays < 0) return `Overdue by ${Math.abs(diffDays)} days`;
+    if (diffDays === 0) return 'Due today';
+    return `Due in ${diffDays} days`;
+  };
+
+  return (
+    <div className="max-w-4xl mx-auto space-y-6 font-jt-rejiro text-left">
+      {/* Header bar */}
+      <div className="flex justify-between items-center border-b border-brand-border/10 pb-4">
+        <div>
+          <button 
+            onClick={() => navigateTo('invoices')}
+            className="text-xs text-brand-purple-dark dark:text-brand-purple font-semibold hover:underline"
+          >
+            ← Back to All Invoices
+          </button>
+          <h2 className="text-xl font-majesti font-bold text-gray-900 dark:text-white mt-1">Invoice Details</h2>
+        </div>
+
+        <div className="flex items-center gap-2">
+          {invoice.status === 'pending' && (
+            <>
+              {isOwner ? (
+                <button
+                  onClick={handleCancel}
+                  disabled={cancelling}
+                  className="px-4 py-2 border border-red-200 text-red-600 hover:bg-red-50 dark:border-red-900/30 dark:text-red-400 dark:hover:bg-red-950/20 rounded font-semibold text-xs transition-all disabled:opacity-50"
+                >
+                  {cancelling ? 'Voiding...' : 'Cancel Invoice'}
+                </button>
+              ) : (
+                <button
+                  onClick={handlePay}
+                  disabled={paying}
+                  className="px-5 py-2 bg-brand-purple-dark text-white dark:text-black hover:bg-opacity-95 rounded font-semibold text-xs shadow-md transition-all flex items-center gap-1.5 disabled:opacity-50"
+                >
+                  <Wallet className="w-3.5 h-3.5" />
+                  {paying ? 'Paying...' : 'Sign & Pay XLM'}
+                </button>
+              )}
+            </>
+          )}
+
+          <span className={`text-[10px] font-bold font-tomket-boys px-3 py-1.5 rounded-full ${
+            invoice.status === 'paid'
+              ? 'bg-green-50 text-green-700 dark:bg-green-950/30 dark:text-green-400 border border-green-200/20'
+              : invoice.status === 'cancelled'
+              ? 'bg-red-50 text-red-700 dark:bg-red-950/30 dark:text-red-400 border border-red-200/20'
+              : 'bg-amber-50 text-amber-700 dark:bg-amber-950/30 dark:text-amber-400 border border-amber-200/20'
+          }`}>
+            STATUS: {invoice.status.toUpperCase()}
+          </span>
+        </div>
+      </div>
+
+      {/* Main Invoice Document View */}
+      <div className="bg-white dark:bg-brand-dark/90 border border-brand-border/20 rounded-lg shadow-lg overflow-hidden flex flex-col md:flex-row">
+        
+        {/* Left Side: Invoice Document Body */}
+        <div className="flex-1 p-6 md:p-8 space-y-8">
+          
+          {/* Header */}
+          <div className="flex justify-between items-start gap-4">
+            <div>
+              <span className="font-majesti text-2xl font-bold bg-gradient-to-r from-brand-purple-dark to-brand-blue-dark dark:from-brand-purple dark:to-brand-blue bg-clip-text text-transparent">
+                InvoiceX
+              </span>
+              <span className="text-[10px] text-gray-400 font-mono block mt-1">ON-CHAIN BILLING SYSTEM</span>
+            </div>
+            <div className="text-right">
+              <span className="text-xs text-gray-400 block font-tomket-boys">INVOICE REFERENCE ID</span>
+              <span className="text-sm font-bold font-tomket-boys text-gray-700 dark:text-gray-300">{invoice.id}</span>
+            </div>
+          </div>
+
+          {/* Metadata Row */}
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 py-4 border-y border-brand-border/10">
+            <div>
+              <span className="text-[10px] text-gray-400 block font-tomket-boys">DATE PUBLISHED</span>
+              <span className="text-xs font-semibold dark:text-white mt-0.5 block">{new Date(invoice.timestamp).toLocaleDateString()}</span>
+            </div>
+            <div>
+              <span className="text-[10px] text-gray-400 block font-tomket-boys">DUE DATE</span>
+              <span className="text-xs font-semibold dark:text-white mt-0.5 block font-tomket-boys">{invoice.dueDate}</span>
+            </div>
+            <div>
+              <span className="text-[10px] text-gray-400 block font-tomket-boys">PAYMENT WINDOW</span>
+              <span className="text-xs font-semibold text-brand-purple-dark dark:text-brand-purple mt-0.5 block">
+                {getDueStatus()}
+              </span>
+            </div>
+            <div>
+              <span className="text-[10px] text-gray-400 block font-tomket-boys">CREATOR CONTRACT TYPE</span>
+              <span className="text-xs font-semibold dark:text-white mt-0.5 block font-tomket-boys">SOROBAN V1</span>
+            </div>
+          </div>
+
+          {/* Client & Billing addresses */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+            <div>
+              <span className="text-[10px] text-gray-400 block font-tomket-boys">BILL TO (CLIENT)</span>
+              <div className="mt-2 space-y-1">
+                <span className="font-bold text-gray-900 dark:text-white block">{invoice.clientName}</span>
+                <span className="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-1">
+                  <Mail className="w-3.5 h-3.5 shrink-0" />
+                  {invoice.clientEmail}
+                </span>
+                <span className="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-1 font-mono select-all">
+                  <Wallet className="w-3.5 h-3.5 shrink-0" />
+                  {formatAddress(invoice.clientAddress)}
+                </span>
+              </div>
+            </div>
+            <div>
+              <span className="text-[10px] text-gray-400 block font-tomket-boys">BILL FROM (CREATOR WALLET)</span>
+              <div className="mt-2 space-y-1">
+                <span className="font-bold text-gray-900 dark:text-white block">Stellar Developer</span>
+                <span className="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-1 font-tomket-boys select-all font-mono">
+                  <User className="w-3.5 h-3.5 shrink-0" />
+                  {formatAddress(invoice.creator)}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          {/* Invoice Itemized Lines */}
+          <div className="space-y-3">
+            <span className="text-[10px] text-gray-400 block font-tomket-boys">DELIVERABLES DESCRIPTION</span>
+            <div className="p-4 rounded-lg bg-brand-light/20 dark:bg-brand-dark/40 border border-brand-border/10">
+              <h4 className="text-sm font-bold dark:text-white">{invoice.title}</h4>
+              <p className="text-xs text-gray-500 dark:text-gray-400 mt-1.5 leading-relaxed">
+                {invoice.description}
+              </p>
+            </div>
+          </div>
+
+          {/* Invoice Notes */}
+          {invoice.notes && (
+            <div className="space-y-1.5">
+              <span className="text-[10px] text-gray-400 block font-tomket-boys">ADDITIONAL MEMO / PAYMENT TERMS</span>
+              <p className="text-xs text-gray-500 dark:text-gray-400 italic">
+                "{invoice.notes}"
+              </p>
+            </div>
+          )}
+
+          {/* Pricing Total */}
+          <div className="flex justify-end pt-4 border-t border-brand-border/10">
+            <div className="w-60 text-right space-y-1.5">
+              <div className="flex justify-between text-xs text-gray-400">
+                <span>Subtotal</span>
+                <span className="font-tomket-boys">{parseFloat(invoice.amount).toFixed(2)} XLM</span>
+              </div>
+              <div className="flex justify-between text-xs text-gray-400">
+                <span>Ledger transaction fee</span>
+                <span className="font-tomket-boys">0.00 XLM</span>
+              </div>
+              <div className="flex justify-between text-base font-extrabold text-brand-purple-dark dark:text-white pt-2 border-t border-brand-border/10">
+                <span>Total Due</span>
+                <span className="font-tomket-boys">{parseFloat(invoice.amount).toFixed(2)} XLM</span>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        {/* Right Side: Ledger / Contract Metadata panel */}
+        <div className="w-full md:w-80 bg-brand-light/30 dark:bg-brand-dark border-t md:border-t-0 md:border-l border-brand-border/20 p-6 md:p-8 space-y-6">
+          <h3 className="text-xs font-bold text-gray-400 font-tomket-boys border-b border-brand-border/10 pb-2 mb-4 uppercase">
+            Ledger Proof Panel
+          </h3>
+
+          <div className="space-y-4 text-xs">
+            <div>
+              <span className="text-[10px] text-gray-400 block font-tomket-boys">SOROBAN ID</span>
+              <span className="text-[10px] font-mono text-gray-600 dark:text-gray-300 block truncate mt-1 bg-white dark:bg-brand-dark/50 p-1.5 rounded border border-brand-border/10 select-all font-tomket-boys">
+                {getNetworkConfig().contractId}
+              </span>
+            </div>
+
+            <div>
+              <span className="text-[10px] text-gray-400 block font-tomket-boys">CONTRACT STATUS</span>
+              {invoice.status === 'paid' ? (
+                <span className="px-2.5 py-1 text-[10px] font-bold rounded-full bg-green-50 text-green-700 dark:bg-green-950/20 dark:text-green-400 inline-block mt-1 font-tomket-boys">
+                  PAYMENT_SETTLED
+                </span>
+              ) : invoice.status === 'cancelled' ? (
+                <span className="px-2.5 py-1 text-[10px] font-bold rounded-full bg-red-50 text-red-700 dark:bg-red-950/20 dark:text-red-400 inline-block mt-1 font-tomket-boys">
+                  INVOICE_VOIDED
+                </span>
+              ) : (
+                <span className="px-2.5 py-1 text-[10px] font-bold rounded-full bg-amber-50 text-amber-700 dark:bg-amber-950/20 dark:text-amber-400 inline-block mt-1 font-tomket-boys">
+                  OPEN_ESCROW
+                </span>
+              )}
+            </div>
+
+            <div className="pt-2 border-t border-brand-border/10 space-y-3">
+              <div>
+                <span className="text-[10px] text-gray-400 block font-tomket-boys">CREATION HASH</span>
+                <a 
+                  href={invoice.txHash.startsWith('sim_hash_') ? '#' : `https://stellar.expert/explorer/testnet/tx/${invoice.txHash}`}
+                  target={invoice.txHash.startsWith('sim_hash_') ? '_self' : '_blank'}
+                  rel="noreferrer"
+                  className="text-xs text-brand-purple hover:underline block truncate mt-1 font-tomket-boys font-mono"
+                >
+                  {invoice.txHash}
+                </a>
+              </div>
+
+              {invoice.payTxHash && (
+                <div>
+                  <span className="text-[10px] text-gray-400 block font-tomket-boys">PAYMENT HASH</span>
+                  <a 
+                    href={invoice.payTxHash.startsWith('sim_hash_') ? '#' : `https://stellar.expert/explorer/testnet/tx/${invoice.payTxHash}`}
+                    target={invoice.payTxHash.startsWith('sim_hash_') ? '_self' : '_blank'}
+                    rel="noreferrer"
+                    className="text-xs text-brand-purple hover:underline block truncate mt-1 font-tomket-boys font-mono"
+                  >
+                    {invoice.payTxHash}
+                  </a>
+                </div>
+              )}
+
+              {invoice.cancelTxHash && (
+                <div>
+                  <span className="text-[10px] text-gray-400 block font-tomket-boys">CANCEL HASH</span>
+                  <a 
+                    href={invoice.cancelTxHash.startsWith('sim_hash_') ? '#' : `https://stellar.expert/explorer/testnet/tx/${invoice.cancelTxHash}`}
+                    target={invoice.cancelTxHash.startsWith('sim_hash_') ? '_self' : '_blank'}
+                    rel="noreferrer"
+                    className="text-xs text-brand-purple hover:underline block truncate mt-1 font-tomket-boys font-mono"
+                  >
+                    {invoice.cancelTxHash}
+                  </a>
+                </div>
+              )}
+            </div>
+
+            <div className="pt-3 border-t border-brand-border/10 text-[10px] text-gray-400 leading-relaxed font-jt-rejiro bg-brand-light/20 dark:bg-brand-dark/20 p-2.5 rounded">
+              <span className="font-bold font-tomket-boys block mb-1">STELLAR AUDIT TIP</span>
+              Verify hashes in the Stellar Expert public ledger to inspect gas logs and contract parameters for this billing escrow.
+            </div>
+
+          </div>
+
+        </div>
+
+      </div>
+    </div>
+  );
+}
+
+// ==========================================
+// TRANSACTION HISTORY
+// ==========================================
+function TransactionsPage() {
+  const [txs, setTxs] = useState<TransactionItem[]>([]);
+
+  const loadTransactions = () => {
+    setTxs(getTransactionHistory());
+  };
+
+  useEffect(() => {
+    loadTransactions();
+
+    const handleTxsChange = () => {
+      loadTransactions();
+    };
+
+    window.addEventListener('invoicex_transactions_change', handleTxsChange);
+    return () => window.removeEventListener('invoicex_transactions_change', handleTxsChange);
+  }, []);
+
+  return (
+    <div className="space-y-6 font-jt-rejiro text-left">
+      <div>
+        <h2 className="text-2xl font-majesti font-bold text-gray-900 dark:text-white">Transaction Logs</h2>
+        <p className="text-xs text-gray-400 dark:text-gray-500 font-tomket-boys mt-0.5">
+          LOCAL INTERACTION LEDGER HISTORY
+        </p>
+      </div>
+
+      <div className="bg-white dark:bg-brand-dark border border-brand-border/20 rounded-lg shadow-sm overflow-hidden">
+        
+        {/* Table Head */}
+        <div className="hidden md:grid grid-cols-5 p-4 border-b border-brand-border/15 bg-brand-light/30 dark:bg-brand-dark/50 text-xs font-bold text-gray-400 font-tomket-boys">
+          <div>DATE</div>
+          <div>INVOICE REF</div>
+          <div>OPERATION TYPE</div>
+          <div>AMOUNT (XLM)</div>
+          <div className="text-right">LEDGER STATE</div>
+        </div>
+
+        {/* Table Body */}
+        {txs.length === 0 ? (
+          <div className="py-20 text-center text-gray-400">
+            <History className="w-12 h-12 mx-auto text-gray-300 dark:text-gray-700 mb-3" />
+            <p className="font-medium text-sm">No Transactions Logged</p>
+            <p className="text-xs text-gray-400 mt-1">Wallet interactions are stored here to trace ledger status.</p>
+          </div>
+        ) : (
+          <div className="divide-y divide-brand-border/10 dark:divide-white/5">
+            {txs.map((tx) => (
+              <div 
+                key={tx.id}
+                className="grid grid-cols-1 md:grid-cols-5 p-4 items-center gap-2 text-sm"
+              >
+                {/* Date */}
+                <div className="text-left">
+                  <span className="md:hidden text-[10px] text-gray-400 block font-tomket-boys mb-0.5">DATE</span>
+                  <span className="font-semibold text-gray-700 dark:text-gray-300 font-tomket-boys">
+                    {new Date(tx.timestamp).toLocaleString()}
+                  </span>
+                </div>
+
+                {/* Invoice Ref */}
+                <div className="text-left font-mono font-tomket-boys text-xs">
+                  <span className="md:hidden text-[10px] text-gray-400 block font-tomket-boys mb-0.5">INVOICE REF</span>
+                  {tx.invoiceId}
+                </div>
+
+                {/* Operation */}
+                <div className="text-left capitalize font-semibold dark:text-white">
+                  <span className="md:hidden text-[10px] text-gray-400 block font-tomket-boys mb-0.5">OPERATION</span>
+                  {tx.type === 'create' ? 'Publish Invoice' : tx.type === 'pay' ? 'Escrow Payment' : 'Void Escrow'}
+                </div>
+
+                {/* Amount */}
+                <div className="text-left font-bold font-tomket-boys text-brand-purple-dark dark:text-white">
+                  <span className="md:hidden text-[10px] text-gray-400 block font-tomket-boys mb-0.5">AMOUNT</span>
+                  {parseFloat(tx.amount).toFixed(2)} XLM
+                </div>
+
+                {/* Status / Hash */}
+                <div className="text-left md:text-right">
+                  <span className="md:hidden text-[10px] text-gray-400 block font-tomket-boys mb-1">LEDGER STATE</span>
+                  <div className="flex flex-col md:items-end">
+                    <span className={`text-[10px] font-bold font-tomket-boys px-2.5 py-0.5 rounded-full inline-block ${
+                      tx.status === 'success'
+                        ? 'bg-green-50 text-green-700 dark:bg-green-950/30 dark:text-green-400 border border-green-200/20'
+                        : tx.status === 'failed'
+                        ? 'bg-red-50 text-red-700 dark:bg-red-950/30 dark:text-red-400 border border-red-200/20'
+                        : tx.status === 'processing'
+                        ? 'bg-blue-50 text-blue-700 dark:bg-blue-950/30 dark:text-blue-400 border border-blue-200/20 animate-pulse'
+                        : 'bg-amber-50 text-amber-700 dark:bg-amber-950/30 dark:text-amber-400 border border-amber-200/20'
+                    }`}>
+                      {tx.status.toUpperCase()}
+                    </span>
+                    {tx.hash && (
+                      <a 
+                        href={tx.hash.startsWith('sim_hash_') ? '#' : `https://stellar.expert/explorer/testnet/tx/${tx.hash}`}
+                        target={tx.hash.startsWith('sim_hash_') ? '_self' : '_blank'}
+                        rel="noreferrer"
+                        className="text-[9px] text-brand-purple hover:underline mt-1 font-tomket-boys font-mono max-w-[120px] truncate block"
+                      >
+                        {tx.hash}
+                      </a>
+                    )}
+                  </div>
+                </div>
+
+              </div>
+            ))}
+          </div>
+        )}
+
+      </div>
+    </div>
+  );
+}
+
+// ==========================================
+// 404 PAGE
+// ==========================================
+function NotFoundPage() {
+  const { navigateTo } = useInvoiceX();
+  return (
+    <div className="text-center py-20 font-jt-rejiro text-left">
+      <AlertCircle className="w-16 h-16 mx-auto text-gray-300 dark:text-gray-700 mb-4" />
+      <h2 className="text-3xl font-majesti font-bold text-gray-900 dark:text-white">Page Not Found</h2>
+      <p className="text-gray-500 dark:text-gray-400 mt-2 max-w-sm mx-auto">
+        The route/hash you navigated to is invalid or does not correspond to an active InvoiceX page module.
+      </p>
+      <button
+        onClick={() => navigateTo('dashboard')}
+        className="mt-6 px-6 py-2.5 bg-brand-purple-dark text-white dark:text-black rounded font-semibold text-sm hover:bg-opacity-95 shadow-md"
+      >
+        Go to Dashboard
+      </button>
+    </div>
+  );
+}
+
+// Main App Coordinator Routing Shell
 function AppContent() {
   const { currentPage } = useInvoiceX();
-  if (currentPage === 'landing') return <LandingPage />;
-  if (currentPage === 'invoices') return <InvoicesPage />;
-  if (currentPage === 'create-invoice') return <CreateInvoicePage />;
-  return <DashboardPage />;
+  const [walletModalOpen, setWalletModalOpen] = useState(false);
+
+  const renderActivePage = () => {
+    switch (currentPage) {
+      case 'landing':
+        return <LandingPage />;
+      case 'dashboard':
+        return <DashboardPage onOpenWalletModal={() => setWalletModalOpen(true)} />;
+      case 'invoices':
+        return <InvoicesPage />;
+      case 'create-invoice':
+        return <CreateInvoicePage />;
+      case 'invoice-details':
+        return <InvoiceDetailsPage />;
+      case 'transactions':
+        return <TransactionsPage />;
+      case '404':
+      default:
+        return <NotFoundPage />;
+    }
+  };
+
+  return (
+    <>
+      <Layout onOpenWalletModal={() => setWalletModalOpen(true)}>
+        {renderActivePage()}
+      </Layout>
+      
+      <WalletModal isOpen={walletModalOpen} onClose={() => setWalletModalOpen(false)} />
+      <TransactionStatusModal />
+      <ToastsContainer />
+    </>
+  );
 }
+
+// Wrapper to provide contexts correctly
 function App() {
   return (
     <AppProvider>
@@ -1575,4 +2321,5 @@ function App() {
     </AppProvider>
   );
 }
+
 export default App;
