@@ -1,0 +1,55 @@
+@import "tailwindcss";
+
+:root {
+  --background: #f7f8f9;
+  --on-background: #1a1c1d;
+  --primary: #6b21a8; /* purple-700 */
+  --primary-dark: #581c87; /* purple-800 */
+  --secondary: #1d4ed8; /* blue-700 */
+  --border: #e2e8f0;
+}
+
+.dark {
+  --background: #0f172a;
+  --on-background: #f8fafc;
+  --primary: #a855f7; /* purple-500 */
+  --primary-dark: #c084fc; /* purple-400 */
+  --secondary: #3b82f6; /* blue-500 */
+  --border: #334155;
+}
+
+body {
+  margin: 0;
+  font-family: 'Inter', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Custom fonts styling from App.tsx */
+.font-majesti {
+  font-family: 'Outfit', 'Inter', sans-serif;
+}
+
+.font-jt-rejiro {
+  font-family: 'Inter', sans-serif;
+}
+
+.font-tomket-boys {
+  font-family: 'JetBrains Mono', monospace;
+}
+
+/* Glassmorphism utility classes */
+.glass-card {
+  backdrop-filter: blur(12px);
+  background: rgba(255, 255, 255, 0.45);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+}
+
+.dark .glass-card {
+  background: rgba(15, 23, 42, 0.45);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.ambient-glow {
+  box-shadow: 0 0 40px rgba(168, 85, 247, 0.15);
+}
