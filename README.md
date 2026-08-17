@@ -1,7 +1,7 @@
 # InvoiceX: Create. Send. Get Paid. On Stellar.
 
 <div align="center">
-  <img src="logo.png" alt="InvoiceX Logo" width="550" style="border-radius: 12px; margin-bottom: 20px; box-shadow: 0 4px 20px rgba(0,0,0,0.4);" />
+  <img src="https://raw.githubusercontent.com/manojCodeBug/InvoiceX/main/logo.png" alt="InvoiceX Logo" width="550" style="border-radius: 12px; margin-bottom: 20px; box-shadow: 0 4px 20px rgba(0,0,0,0.4);" />
 </div>
 
 <div align="center">
@@ -17,7 +17,7 @@
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.x-blue?style=for-the-badge&logo=typescript)](https://www.typescriptlang.org)
 [![Vite](https://img.shields.io/badge/Vite-6.x-yellow?style=for-the-badge&logo=vite)](https://vite.dev)
 [![Vercel](https://img.shields.io/badge/Deploy-Vercel-black?style=for-the-badge&logo=vercel)](https://invoice-x-rust.vercel.app/)
-[![GitHub Actions](https://img.shields.io/badge/CI%2FCD-GitHub_Actions-green?style=for-the-badge&logo=github-actions)](https://github.com/daman-21-deep/InvoiceX/actions)
+[![GitHub Actions](https://img.shields.io/badge/CI%2FCD-GitHub_Actions-green?style=for-the-badge&logo=github-actions)](https://github.com/manojCodeBug/InvoiceX/actions)
 [![License: MIT](https://img.shields.io/badge/License-MIT-orange?style=for-the-badge)](LICENSE)
 
 </div>
@@ -155,7 +155,7 @@ Watch a complete product walkthrough of the InvoiceX platform showing the dual-m
 
 <div align="center">
   <a href="https://drive.google.com/file/d/1fP1O2UEqU8X8qFTB2MUmD5KnWdjmDbE0/view?usp=sharing" target="_blank">
-    <img src="demo_video_thumbnail.png" alt="Watch InvoiceX Demo Video" width="600" />
+    <img src="https://raw.githubusercontent.com/manojCodeBug/InvoiceX/main/demo_video_thumbnail.png" alt="Watch InvoiceX Demo Video" width="600" />
   </a>
   <p><em>Click the image above to watch the full InvoiceX walkthrough video on Google Drive.</em></p>
 </div>
@@ -481,7 +481,7 @@ InvoiceX/
 ### Step-by-Step Guide
 1. **Clone the Repository**:
    ```bash
-   git clone https://github.com/daman-21-deep/InvoiceX.git
+   git clone https://github.com/manojCodeBug/InvoiceX.git
    cd InvoiceX
    ```
 
@@ -519,8 +519,8 @@ Create a `.env` file in the root workspace directory to configure the frontend c
 VITE_NETWORK_MODE=testnet
 
 # Deployed Contract Addresses on Stellar Testnet
-VITE_INVOICEREGISTRY_CONTRACT_ID=CDA7M4K2Z6KRP4XF5FQCJZ66J4WCRKTRM6UX6GL57H7JSP2HULMXYVXT
-VITE_PAYMENTMANAGER_CONTRACT_ID=CB5J27H7Q5S3X7F4P3Z5U4Z2Z4Z2Z4Z2Z4Z2Z4Z2Z4Z2Z4Z2Z4Z2Z4Z2
+VITE_INVOICEREGISTRY_CONTRACT_ID=CAZEGY23AMYTGWXHVPW4ZRY7PDNX7YNX7665PS72YQBZRDGHYDPDQEZC
+VITE_PAYMENTMANAGER_CONTRACT_ID=CDHPTAIV2WHKN3LADJCV3IV7OFVBUKDOSTUQN27RXC6MXW3RBJT3EQDU
 ```
 
 ---
@@ -563,8 +563,8 @@ The smart contracts are active on the Stellar Testnet and accessible via the fol
 
 | Contract | Purpose | Contract ID (Testnet) |
 |---|---|---|
-| **InvoiceRegistry** | Stores persistent invoice billing structures and status states | `CDA7M4K2Z6KRP4XF5FQCJZ66J4WCRKTRM6UX6GL57H7JSP2HULMXYVXT` |
-| **PaymentManager** | Manages native token routing and executes cross-contract state transitions | `CB5J27H7Q5S3X7F4P3Z5U4Z2Z4Z2Z4Z2Z4Z2Z4Z2Z4Z2Z4Z2Z4Z2Z4Z2` |
+| **InvoiceRegistry** | Stores persistent invoice billing structures and status states | `CAZEGY23AMYTGWXHVPW4ZRY7PDNX7YNX7665PS72YQBZRDGHYDPDQEZC` |
+| **PaymentManager** | Manages native token routing and executes cross-contract state transitions | `CDHPTAIV2WHKN3LADJCV3IV7OFVBUKDOSTUQN27RXC6MXW3RBJT3EQDU` |
 
 ---
 
@@ -573,13 +573,13 @@ The smart contracts are active on the Stellar Testnet and accessible via the fol
 For verification, here are core transaction hashes executing deployments, initializations, and payments on the Stellar Testnet:
 
 * **Contract Deployment Transaction Hash**:
-  `41c09b85ce281358ef9295bc10134f59e7a049182390a8274092b3a0cd192830`
+  `a120d1cab9bfe2af4c31223f9bc72baa03a74b276197428d9e30c529f38e3ab3`
 * **Registry Initialization Transaction Hash**:
-  `a28ef50c18d361c479e0186c3b371b77fe08e2f8c5b61cd729cf39e7d01828cd`
+  `7bd43d9c4e400c506a7bb875d17e8131df07a3454b914d93395f36dd36558b6c`
 * **Escrow Invoice Creation Transaction Hash**:
-  `1a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a2b`
+  `fec7166c02fc85226f7c5e1b033f460fcdf34572f8b87015a0d284dc221c5ec4`
 * **Atomic Invoice Payment Settlement Transaction Hash**:
-  `9f8e7d6c5b4a3f2e1d0c9b8a7f6e5d4c3b2a1f0e9d8c7b6a5f4e3d2c1b0a9f8e`
+  `6672821c01820e35f51b261db83980e3b3a19ab7eca7a6294a9c6afc35ebf2a2`
 
 ---
 
@@ -588,11 +588,11 @@ For verification, here are core transaction hashes executing deployments, initia
 Monitor deployed smart contracts, ledger states, and client transactions using the Stellar Expert indexer:
 
 * **InvoiceRegistry Explorer**:
-  [Stellar.Expert | InvoiceRegistry Contract](https://stellar.expert/explorer/testnet/contract/CDA7M4K2Z6KRP4XF5FQCJZ66J4WCRKTRM6UX6GL57H7JSP2HULMXYVXT)
+  [Stellar.Expert | InvoiceRegistry Contract](https://stellar.expert/explorer/testnet/contract/CAZEGY23AMYTGWXHVPW4ZRY7PDNX7YNX7665PS72YQBZRDGHYDPDQEZC)
 * **PaymentManager Explorer**:
-  [Stellar.Expert | PaymentManager Contract](https://stellar.expert/explorer/testnet/contract/CB5J27H7Q5S3X7F4P3Z5U4Z2Z4Z2Z4Z2Z4Z2Z4Z2Z4Z2Z4Z2Z4Z2Z4Z2)
+  [Stellar.Expert | PaymentManager Contract](https://stellar.expert/explorer/testnet/contract/CDHPTAIV2WHKN3LADJCV3IV7OFVBUKDOSTUQN27RXC6MXW3RBJT3EQDU)
 * **Sample Deployment Transaction Log**:
-  [Stellar.Expert | Transaction details](https://stellar.expert/explorer/testnet/tx/41c09b85ce281358ef9295bc10134f59e7a049182390a8274092b3a0cd192830)
+  [Stellar.Expert | Transaction details](https://stellar.expert/explorer/testnet/tx/a120d1cab9bfe2af4c31223f9bc72baa03a74b276197428d9e30c529f38e3ab3)
 
 ---
 
@@ -748,22 +748,19 @@ Distributed under the MIT License. See `LICENSE` for more information.
 ## 🖼️ VISUAL SCREEN GALLERY
 
 ### Landing Page
-![Landing Page Screenshot Placeholder](https://placehold.co/800x450/111111/cccccc/png?text=InvoiceX+Landing+Page)
+![Landing Page Screenshot](https://raw.githubusercontent.com/manojCodeBug/InvoiceX/main/docs/screenshots/landing.png)
 
 ### Dashboard Overview
-![Dashboard Screenshot Placeholder](https://placehold.co/800x450/111111/cccccc/png?text=InvoiceX+Dashboard+Overview)
+![Dashboard Screenshot](https://raw.githubusercontent.com/manojCodeBug/InvoiceX/main/docs/screenshots/dashboard.png)
 
-### Wallet Connected State
-![Wallet State Placeholder](https://placehold.co/800x450/111111/cccccc/png?text=Wallet+Connected+Dashboard)
+### Wallet & Connection Settings Modal
+![Wallet State](https://raw.githubusercontent.com/manojCodeBug/InvoiceX/main/docs/screenshots/network.png)
 
 ### Invoice Creation Portal
 ![Invoice Creation Placeholder](https://placehold.co/800x450/111111/cccccc/png?text=Deploy+Invoice+Form)
 
-### Atomic Payment Confirmation
-![Payment Confirmation Placeholder](https://placehold.co/800x450/111111/cccccc/png?text=On-Chain+Settle+Receipt)
-
-### Responsive Mobile UI
-![Mobile Viewport Placeholder](https://placehold.co/800x450/111111/cccccc/png?text=Mobile+Responsive+Dashboard)
+### Why Stellar Invoicing Panel
+![Why Invoicing on Stellar](https://raw.githubusercontent.com/manojCodeBug/InvoiceX/main/docs/screenshots/why-stellar.png)
 
 ### Chronological Activity Feed
 ![Activity Feed Placeholder](https://placehold.co/800x450/111111/cccccc/png?text=Soroban+Event+Logs)
