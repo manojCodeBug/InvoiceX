@@ -16,14 +16,14 @@
 [![React](https://img.shields.io/badge/React-19.0-blue?style=for-the-badge&logo=react)](https://react.dev)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.x-blue?style=for-the-badge&logo=typescript)](https://www.typescriptlang.org)
 [![Vite](https://img.shields.io/badge/Vite-6.x-yellow?style=for-the-badge&logo=vite)](https://vite.dev)
-[![Vercel](https://img.shields.io/badge/Deploy-Vercel-black?style=for-the-badge&logo=vercel)](https://invoice-x-rust.vercel.app/)
+[![Vercel](https://img.shields.io/badge/Deploy-Vercel-black?style=for-the-badge&logo=vercel)](https://invoice-x-six.vercel.app/)
 [![GitHub Actions](https://img.shields.io/badge/CI%2FCD-GitHub_Actions-green?style=for-the-badge&logo=github-actions)](https://github.com/manojCodeBug/InvoiceX/actions)
 [![License: MIT](https://img.shields.io/badge/License-MIT-orange?style=for-the-badge)](LICENSE)
 
 </div>
 
 <div align="center" style="margin-top: 15px; margin-bottom: 30px;">
-  <a href="https://invoice-x-rust.vercel.app/" target="_blank" style="background-color: #000; color: #fff; padding: 12px 24px; font-weight: bold; border-radius: 8px; text-decoration: none; border: 2px solid #5a5a5a; box-shadow: 0 4px 15px rgba(0,0,0,0.5);">
+  <a href="https://invoice-x-six.vercel.app/" target="_blank" style="background-color: #000; color: #fff; padding: 12px 24px; font-weight: bold; border-radius: 8px; text-decoration: none; border: 2px solid #5a5a5a; box-shadow: 0 4px 15px rgba(0,0,0,0.5);">
     🚀 Launch Live App
   </a>
 </div>
@@ -121,7 +121,7 @@ InvoiceX addresses the broken invoicing lifecycle by introducing a dual-contract
 
 ## 🚀 LIVE DEMO & TESTING GUIDE
 
-**Live Application URL**: [https://invoice-x-rust.vercel.app/](https://invoice-x-rust.vercel.app/)
+**Live Application URL**: [https://invoice-x-six.vercel.app/](https://invoice-x-six.vercel.app/)
 
 To allow judges, developers, and users to test the full lifecycle, InvoiceX features a **dual-mode gateway**:
 
@@ -155,11 +155,10 @@ Watch a complete product walkthrough of the InvoiceX platform showing the dual-m
 
 <div align="center">
   <a href="https://drive.google.com/file/d/1fP1O2UEqU8X8qFTB2MUmD5KnWdjmDbE0/view?usp=sharing" target="_blank">
-    <img src="https://raw.githubusercontent.com/manojCodeBug/InvoiceX/main/demo_video_thumbnail.png" alt="Watch InvoiceX Demo Video" width="600" />
+    <img src="https://raw.githubusercontent.com/manojCodeBug/InvoiceX/main/demo_video_thumbnail.png" alt="Watch InvoiceX Demo Video" width="600" style="border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.3);" />
   </a>
   <p><em>Click the image above to watch the full InvoiceX walkthrough video on Google Drive.</em></p>
 </div>
-
 
 ---
 
@@ -719,7 +718,7 @@ Tracks user behavior and application performance metrics:
 ## 🚀 DEPLOYMENT
 
 The application is deployed on Vercel and is accessible at:
-* **Production URL**: [https://invoice-x-rust.vercel.app/](https://invoice-x-rust.vercel.app/)
+* **Production URL**: [https://invoice-x-six.vercel.app/](https://invoice-x-six.vercel.app/)
 
 The codebase features automatic CI/CD deployment pipelines, ensuring that every merge to `main` is validated and deployed immediately.
 
@@ -740,7 +739,7 @@ Distributed under the MIT License. See `LICENSE` for more information.
 ## ✍️ AUTHOR & CONTACT
 
 * **Project Name**: InvoiceX
-* **Live Demo**: [https://invoice-x-rust.vercel.app/](https://invoice-x-rust.vercel.app/)
+* **Live Demo**: [https://invoice-x-six.vercel.app/](https://invoice-x-six.vercel.app/)
 * *Developed for the Stellar Soroban Hackathon Submission.*
 
 ---
@@ -748,34 +747,24 @@ Distributed under the MIT License. See `LICENSE` for more information.
 ## 🖼️ VISUAL SCREEN GALLERY
 
 ### Landing Page
-![Landing Page Screenshot](https://raw.githubusercontent.com/manojCodeBug/InvoiceX/main/docs/screenshots/landing.png)
+<img width="1847" height="939" alt="image" src="https://github.com/user-attachments/assets/30642306-cc44-42f3-9f62-af28a65f4dd1" />
 
 ### Dashboard Overview
-![Dashboard Screenshot](https://raw.githubusercontent.com/manojCodeBug/InvoiceX/main/docs/screenshots/dashboard.png)
+<img width="1917" height="933" alt="image" src="https://github.com/user-attachments/assets/c5404cf2-d04f-4c12-a99b-4f18621c6aaf" />
 
-### Wallet & Connection Settings Modal
-![Wallet State](https://raw.githubusercontent.com/manojCodeBug/InvoiceX/main/docs/screenshots/network.png)
+### Wallet Connected State
+<img width="1919" height="935" alt="image" src="https://github.com/user-attachments/assets/2325b747-4dab-404d-8dda-1ed91e3607b8" />
 
 ### Invoice Creation Portal
-![Invoice Creation Placeholder](https://placehold.co/800x450/111111/cccccc/png?text=Deploy+Invoice+Form)
+<img width="1904" height="928" alt="image" src="https://github.com/user-attachments/assets/acb1cc75-7ce8-48c8-9d89-556ead3b73e3" />
 
-### Why Stellar Invoicing Panel
-![Why Invoicing on Stellar](https://raw.githubusercontent.com/manojCodeBug/InvoiceX/main/docs/screenshots/why-stellar.png)
+### Atomic Payment Confirmation
+<img width="1919" height="930" alt="image" src="https://github.com/user-attachments/assets/e09b73e1-9752-4321-854a-af683906188b" />
 
-### Chronological Activity Feed
-![Activity Feed Placeholder](https://placehold.co/800x450/111111/cccccc/png?text=Soroban+Event+Logs)
-
-### Analytics Dashboard telemetry
-![Analytics Dashboard Placeholder](https://placehold.co/800x450/111111/cccccc/png?text=Sentry+and+GA4+Telemetry)
+### Responsive Mobile UI
+<img width="467" height="826" alt="image" src="https://github.com/user-attachments/assets/97bac01f-8123-41c0-9e0a-36584cf7ff24" />
 
 ### CI/CD Pipelines Passing
-![CI/CD Screenshot Placeholder](https://placehold.co/800x450/111111/cccccc/png?text=GitHub+Actions+Build+Passing)
+![CI/CD Pipelines](https://img.shields.io/github/actions/workflow/status/manojCodeBug/InvoiceX/ci.yml?branch=main&style=for-the-badge&logo=github-actions)
 
-### Test Suite Output
-![Test Suite Placeholder](https://placehold.co/800x450/111111/cccccc/png?text=Cargo+Test+Output+11+Passing)
-
-### User Validation Metrics
-![User Metrics Placeholder](https://placehold.co/800x450/111111/cccccc/png?text=User+Testing+Feedback+Metrics)
-
-### Demo Video Portal
-*A full video walkthrough is available in the [Demo Video](#-demo-video) section of this document.
+### [Demo Video](https://drive.google.com/file/d/1fP1O2UEqU8X8qFTB2MUmD5KnWdjmDbE0/view?usp=sharing)
